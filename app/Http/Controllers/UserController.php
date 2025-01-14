@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
 {
@@ -30,7 +31,31 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate(
+            [
+                'name' => 'required',
+                'email' => 'required|email|unique:users',
+                'photo' => 'mimes:png,jpeg,jpg|max:2048'
+            ]
+            );
+
+            $filePath = public_path('uploads');
+            $insert = new User();
+            $insert->name = $request->name;
+            $insert->email = $request->email;
+            $insert->password = bcrypt('password');
+
+            if($request->hasfile('photo')) {
+                $file = $request->file('photo');
+                $file_name = time() . $file->getClientOriginalName();
+
+                $file->move($filePath, $file_name);
+                $insert->photo = $file_name;
+            }
+
+            $result = $insert->save();
+            Session::flash('success', 'Pegguna Baru Berhasil Ditambahkan');
+            return redirect()->route('user.index');
     }
 
     /**

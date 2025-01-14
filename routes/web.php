@@ -11,4 +11,5 @@ Route::get('/admin', [UserController::class, 'index'])->name('user.index');
 
 Route::group(['prefix' => 'admin/user'], function () {
     Route::get('/create', [UserController::class,'create'])->name('user.create');
+    Route::post('/add', [UserController::class, 'store'])->name('user.store');
 });
