@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
@@ -45,7 +46,7 @@ class UserController extends Controller
             $insert->email = $request->email;
             $insert->password = bcrypt('password');
 
-            if($request->hasfile('photo')) {
+            if($request->hasFile('photo')) {
                 $file = $request->file('photo');
                 $file_name = time() . $file->getClientOriginalName();
 
@@ -69,24 +70,62 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $title = "Edit Data";
+        $edit = User::findOrFail($id);
+        return view('admin.add_edit_user', compact('edit','title'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate(
+            [
+                'name'=> 'required',
+                'email'=> 'required|email|unique:users,email,' . $id,
+                'photo' => 'mimes:png,jpeg,jpg|max:2048',
+            ]
+            );
+            $update = User::findOrFail($id);
+            $update -> name = $request->name;
+            $update->email = $request->email;
+            if ($request->hasFile('photo')) {
+                $filePath = public_path('uploads');
+                $file = $request->file('photo');
+                $file_name = time() . $file->getClientOriginalName();
+                $file->move($filePath,$file_name);
+                // hapus foto lama
+                if (!is_null($update->photo)) {
+                    $oldImage = public_path('uploads/' . $update->photo);
+                    if (File::exists($oldImage)) {
+                        unlink($oldImage);
+                    }
+                }
+                $update->photo = $file_name;
+            }
+            $result = $update->save();
+            Session::flash('success', 'Update Data Pegguna Berhasil');
+            return redirect()->route('user.index');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request)
     {
-        //
+        $userData = User::findOrFail($request->user_id);
+        $userData->delete();
+        // delete photot if exists
+        if (!is_null($userData->photo)) {
+            $photo = public_path('uploads/' . $userData->photo);
+            if (File::exists($photo)) {
+                unlink($photo);
+            }
+        }
+        Session::flash('success','Menghapus Pegguna Sukses');
+        return redirect()->route('user.index');
     }
 }

@@ -2,7 +2,7 @@
 @section('main-content')
 <div class="container">
     <h2>
-        Unggah Foto 
+        Daftar Pengguna  
     </h2>
 
     <div class="text-end mb-5">
@@ -27,13 +27,18 @@
             <tbody>
                 @forelse ($users as $index => $row)
                     <tr>
-                        <td>1</td>
-                        <td>Muhammad Farhan Amien</td>
-                        <td>farhan@gmail.com</td>
-                        <td>photo</td>
+                        <td>{{$index + 1}}</td>
+                        <td>{{$row->name}}</td>
+                        <td>{{$row->email}}</td>
                         <td>
-                            <a href="" class="btn btn-primary">Edit</a>
-                            <button class="btn btn-danger">Delete</button>
+                            <div class="showPhoto">
+                                <div id="imagePreview" style="@if ($row->photo != '') background-image:url('{{ url('/') }}/uploads/{{ $row->photo }}')@else background-image: url('{{ url('/img/avatar.png') }}') @endif;">
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{route('user.edit',['id'=>$row->id])}}" class="btn btn-primary">Edit</a>
+                            <button class="btn btn-danger" onClick="deleteFunction('{{$row->id}}')">Delete</button>
                         </td>
                     </tr>
                 @empty
@@ -45,4 +50,31 @@
         </table>
     </div>
 </div>
+@include ('admin.modal_delete')
 @endsection
+
+@push('js')
+<script>
+    function deleteFunction(id) {
+        document.getElementById('delete_id').value = id;
+        $("#modalDelete").modal('show');
+    }
+</script>
+@endpush
+
+<style>
+    .showPhoto {
+        width: 51%;
+        height: 54px;
+        margin: auto;
+    }
+
+    .showPhoto>div {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+</style>
