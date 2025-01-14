@@ -21,7 +21,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        $title = "Tambahkan Pengguna Baru";
+        return view('admin.add_edit_user', compact('title'));
     }
 
     /**
